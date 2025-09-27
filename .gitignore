@@ -1,0 +1,29 @@
+# --- Python / tooling ---
+__pycache__/
+*.py[cod]
+*.log
+.venv/
+venv/
+.env
+.env.*
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# --- Archivos generados por tu app ---
+# almacenes/índices/embeddings
+biorag_store/
+# por si en algún momento cambian el nombre:
+*/faiss*/          # índices FAISS
+*/vectors*/        # vectores/embeddings
+*/cache*/          # cachés generales
+.cach*/            # ej: .cache_rag_ollama
+
+# --- Data y resultados voluminosos ---
+data/
+**/*.parquet
+**/*.npy
+
+# --- SO ---
+.DS_Store
+Thumbs.db
