@@ -283,7 +283,7 @@ class Index_coincidencias:
            })
 
        # esto agrega lo nuevo (dedupe por hash de texto normalizado)
-       vs.nuevos(chunks, model_name="sentence-transformers/all-MiniLM-L6-v2")
+       vs.nuevos(chunks, model_name="pritamdeka/S-BioBert-snli-multinli-stsb")
 
        # recuperar embeddings Alineados al orden de self.docs
        hashes = [_sha256_norm(t) for t in texts]
