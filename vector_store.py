@@ -42,7 +42,7 @@ class VectorStore:
     def nuevos(self, chunks: List[Dict[str, Any]], model_name: str, batch_size: int = 64) -> int:
         """
         chunks: [{"doc_id": str, "chunk_id": int, "text": str, "source": str, "title": str}, ...]
-        Devuelve cuántos embeddings NUEVOS se agregaron.
+        Devuelve cuántos embeddings se agregaron.
         """
         if not chunks:
             return 0
@@ -68,6 +68,12 @@ class VectorStore:
 
         if self.dim is None and embs.size > 0:
             self.dim = embs.shape[1]
+
+        elif embs.size > 0 and embs.shape[1] != self.dim:
+            raise ValueError(
+                f"Dimensión inconsistente: store={self.dim}, intentás agregar={embs.shape[1]}. "
+                f"Usá otra carpeta o limpiá el store si cambiaste de modelo de embeddings."
+                )
 
         if self.emb.size == 0:
             self.emb = embs
@@ -96,7 +102,7 @@ class VectorStore:
 
     def embeddings_x_hash(self, hashes: List[str]) -> np.ndarray:
         """
-        Devuelve una matriz de embeddings en el MISMO orden de hashes.
+        Devuelve una matriz de embeddings en el mismo orden de hashes.
         Asume que todos esos hashes existen en self.meta (nuevos antes si no).
         """
         if not hashes:

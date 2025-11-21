@@ -21,21 +21,43 @@ EPMC_FULLTEXT = "https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTe
 
 # Prompt few-shot, con dos anda bien
 _FEWSHOT_EPMC = """
-You produce ONE English query for Europe PMC in Lucene-style syntax.
-Rules:
-- Use AND/OR/NOT, quotes for phrases, parentheses, and * when appropriate.
-- You may use fields (TITLE:, ABSTRACT:), but do NOT use SRC: or PUBLISHER: unless explicitly requested.
-- Keep gene/protein names and acronyms unchanged (e.g., BRCA1, EGFR, IL-4, COPD).
-- Include reasonable synonyms with OR.
-- Reply with ONLY the query, on a single line, with no explanations or extra quotes.
+You will produce ONE English query for Europe PMC in Lucene-style syntax.
 
-Example 1
-Question: Does the BRCA1 gene play a role in breast cancer?
-Your answer: ("BRCA1" OR "BRCC1") AND ("breast cancer" OR "mammary carcinoma")
+GOAL
+Return a focused query that maximizes retrieving the specific paper(s) implied by the question. Prefer precision over recall, but include sane synonyms when helpful.
 
-Example 2
-Question: Genetic causes of Parkinson’s disease.
-Your answer: ("Parkinson's disease" OR parkinsonism OR Parkinson) AND (genetic OR heritable OR monogenic OR mutation* OR variant*) AND (gene OR protein)
+RULES
+- Use boolean operators AND / OR / NOT, parentheses, and quotes for multi-word phrases.
+- Keep gene/protein names, acronyms, and model/tool names exactly as written (e.g., BRCA1, EGFR, IL-4, COPD, RankMHC, ALOX12).
+- Quote exact names and multi-word entities: "variant ranker", "cancer-immunity cycle".
+- Prefer a compact core: (KEY ENTITIES) AND (FOCUS TERMS). Avoid vague words like “process”, “study”, “disease” unless necessary.
+- Use wildcards only where safe (e.g., mutation*; variant*; polymorphism*). Do NOT over-wildcard long words.
+- Cap the total number of OR alternatives to what’s clearly relevant (≈2–6). Keep the whole query concise (≲200 characters).
+- Do NOT add unrelated buzzwords; do NOT hallucinate PMIDs/DOIs; do NOT include explanations.
+- OUTPUT: ONLY the query, a single line.
+
+TEMPLATES (pick what fits the question)
+- SPECIFIC TOOL / METHOD:
+  ("<ToolName>" OR "<ToolName>") AND (<domain terms>)
+- GENE/PROTEIN with CONDITION:
+  ("<GeneSymbol>" OR "<common alias>") AND ("<condition>" OR <close synonym>)
+- DRUG COMBINATION / COMPARISON:
+  ("<DrugA>" OR <close synonym>) AND ("<DrugB>" OR <close synonym>) AND (<indication or class>)
+- VARIANT / POLYMORPHISM:
+  ("<GeneSymbol>" OR "<locus>") AND (polymorphism* OR variant*) AND (<phenotype/endpoint>)
+
+GOOD EXAMPLES
+Q: Describe RankMHC.
+A: ("RankMHC" OR "RankMHC") AND (peptide OR pMHC OR "MHC class I") AND (ranking OR "learning to rank" OR pose)
+
+Q: Variant Ranker software evaluation.
+A: ("Variant Ranker" OR "variant ranker") AND (software OR tool) AND (evaluation OR benchmarking OR analysis)
+
+Q: ALOX12 polymorphisms and cardiovascular events.
+A: ("ALOX12" OR "arachidonate 12-lipoxygenase") AND (polymorphism* OR variant*) AND ("cardiovascular event*" OR "coronary disease" OR stroke OR "myocardial infarction")
+
+Q: Antibiotic-induced hiccups.
+A: ("antibiotic*" OR "antimicrobial*") AND ("hiccup" OR "hiccups") AND (induced OR caused OR adverse)
 
 Now your turn
 Question: {question}
@@ -227,7 +249,7 @@ def normalizar_resultados(r: Dict) -> Doc:
     )
 
 class Index_coincidencias:
-    def __init__(self, embed_model: str = "sentence-transformers/all-MiniLM-L6-v2"):
+    def __init__(self, embed_model: str = "pritamdeka/S-BioBert-snli-multinli-stsb"):
         self.emb = SentenceTransformer(embed_model)
         self.docs: List[Doc] = []
         self.bm25 = None
