@@ -28,10 +28,10 @@ Return a focused query that maximizes retrieving the specific paper(s) implied b
 
 RULES
 - Use boolean operators AND / OR / NOT, parentheses, and quotes for multi-word phrases.
-- Keep gene/protein names, acronyms, and model/tool names exactly as written (e.g., BRCA1, EGFR, IL-4, COPD, RankMHC, ALOX12).
-- Quote exact names and multi-word entities: "variant ranker", "cancer-immunity cycle".
+- Keep gene/protein names, acronyms, and model/tool names exactly as written.
+- Quote exact names and multi-word entities.
 - Prefer a compact core: (KEY ENTITIES) AND (FOCUS TERMS). Avoid vague words like “process”, “study”, “disease” unless necessary.
-- Use wildcards only where safe (e.g., mutation*; variant*; polymorphism*). Do NOT over-wildcard long words.
+- Use wildcards only where safe. Do NOT over-wildcard long words.
 - Cap the total number of OR alternatives to what’s clearly relevant (≈2–6). Keep the whole query concise (≲200 characters).
 - Do NOT add unrelated buzzwords; do NOT hallucinate PMIDs/DOIs; do NOT include explanations.
 - OUTPUT: ONLY the query, a single line.
@@ -178,7 +178,7 @@ def extraer_palabras_clave(
 def buscar_info(query: str, page_size: int = 50):
     # Solo preprints + solo bioRxiv por ahora
     q = f'({query}) AND SRC:PPR AND PUBLISHER:"bioRxiv"'
-    #Otros filtros pueden ser SRC: MED (pubmed), PMC(pubmed central), hay otros que no entiendo del todo
+    #Otros filtros pueden ser SRC: MED (pubmed), PMC(pubmed central), hay otros 
     #                         PUBLISHER: bioRxiv, medRxiv, Research Square...
     #                         Elsevier, Springer Nature, PLOS (para articulos revisados por pares)
 

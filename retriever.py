@@ -18,15 +18,16 @@ def _acortar(s: str, max_chars=200):
 
 def top_snippets(question: str, docs_scored, max_snippets: int = 4):
     #Máx 4 snippets, cada uno <= 200 chars, 1 por doc para diversidad
+    #puede cambiarse si se desea
     snippets = []
     for d, _ in docs_scored[:5]:
         text = f"{(d.title or '').strip()}. {(d.abstract or '').strip()}"
         sents = split_oraciones(text)
-        # prioriza oraciones con números/genes/p-valores (sujeto a modificacion, puse algunos genes que fui viendo pero fue arbitrario)
+        # prioriza oraciones con números/p-valores (sujeto a modificacion, se puede ir cambiando)
         sents.sort(key=lambda s: int(bool(re.search(
-            r'\b(p<|p=|[0-9]+%|[0-9]+\.[0-9]+|IL-|TNF-|BRCA|UBA|EGFR|MAPK|AKT|NF-?kB)\b', s, re.I
+            r'\b(p<|p=|[0-9]+%|[0-9]+\.[0-9])\b', s, re.I
         ))), reverse=True)
-        for s in sents[:1]:  # 1 por doc
+        for s in sents[:1]:  # 1 por doc para mas variedad 
             snippets.append((d, _acortar(s)))
             if len(snippets) >= max_snippets:
                 return snippets
